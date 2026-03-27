@@ -1,0 +1,137 @@
+import os
+
+import discord
+from discord.ext import commands
+
+# ==========================
+# CONFIGURAÇÃO RÁPIDA
+# ==========================
+# Segurança: use variável de ambiente DISCORD_TOKEN em produção.
+# Se quiser teste local rápido, você pode preencher TOKEN_LOCAL abaixo.
+TOKEN_LOCAL = "COLE_SEU_TOKEN_AQUI"
+TOKEN = os.getenv("DISCORD_TOKEN", TOKEN_LOCAL)
+
+PREFIXO = "!"
+CANAL_LOG_ID = 1484413682300620800  # 0 = usa o mesmo canal onde o comando foi executado
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix=PREFIXO, intents=intents, help_command=None)
+
+MODELO_USO = (
+    "Use assim (separe tudo com `;`):\n"
+    "`!prisao Nome do acusado;Passaporte;Crimes;Redução;Atenuantes;Total da pena;"
+    "Total de multa;Fiança paga;Total de fiança;Restrição de fiança;Prisão feita por;"
+    "Policiais envolvidos;Jurídico envolvido;Relatório da ação`\n\n"
+    "Exemplo:\n"
+    "`!prisao llk lkzin;14145;Art. 66: condução imprudente;50%;Réu Primário, Réu Confesso, Colaboração;"
+    "6 meses;R$ 20.000;Não;Nada consta;Não consta;@AGT Segunda D.;"
+    "@INSP Pernambucano, @EST Kauan;Nenhum;Ao pedido de ajuda ... sem alterações.`"
+)
+
+
+def criar_embed_prisao(dados: list[str], autor: discord.Member, anexos: list[str]) -> discord.Embed:
+    (
+        nome,
+        passaporte,
+        crimes,
+        reducao,
+        atenuantes,
+        pena_total,
+        multa_total,
+        fianca_paga,
+        fianca_total,
+        restricao_fianca,
+        prisao_feita_por,
+        policiais,
+        juridico,
+        relatorio,
+    ) = dados
+
+    embed = discord.Embed(
+        title="📋 Bot Prisões - Registro de Prisão",
+        color=discord.Color.dark_blue(),
+    )
+
+    descricao = (
+        f"**NOME DO ACUSADO:** {nome}\n"
+        f"**PASSAPORTE DO ACUSADO:** {passaporte}\n\n"
+        f"**CRIMES COMETIDOS:** {crimes}\n"
+        f"**REDUÇÃO APLICADA:** {reducao}\n"
+        f"**ATENUANTES:** {atenuantes}\n"
+        f"**TOTAL DA PENA:** {pena_total}\n\n"
+        f"**TOTAL DE MULTA:** {multa_total}\n"
+        f"**FIANÇA PAGA:** {fianca_paga}\n"
+        f"**TOTAL DE FIANÇA:** {fianca_total}\n"
+        f"✅ **RESTRIÇÃO DE FIANÇA:** {restricao_fianca}\n\n"
+        f"**PRISÃO FEITA POR:** {prisao_feita_por}\n"
+        f"**POLICIAIS ENVOLVIDOS:** {policiais}\n"
+        f"**JURÍDICO ENVOLVIDO:** {juridico}\n\n"
+        f"**RELATÓRIO DA AÇÃO:** {relatorio}"
+    )
+
+    embed.description = descricao
+    embed.set_footer(text=f"Registro enviado por {autor.display_name}", icon_url=autor.display_avatar.url)
+
+    if anexos:
+        embed.add_field(
+            name="🖼️ Anexos",
+            value="\n".join(f"[Arquivo {i + 1}]({url})" for i, url in enumerate(anexos)),
+            inline=False,
+        )
+        if anexos[0].lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp")):
+            embed.set_image(url=anexos[0])
+
+    return embed
+
+
+@bot.event
+async def on_ready():
+    print(f"Bot online como {bot.user} (ID: {bot.user.id})")
+
+
+@bot.command(name="ajuda")
+async def ajuda(ctx: commands.Context):
+    await ctx.reply(MODELO_USO, mention_author=False)
+
+
+@bot.command(name="modelo")
+async def modelo(ctx: commands.Context):
+    await ctx.reply(MODELO_USO, mention_author=False)
+
+
+@bot.command(name="prisao")
+async def prisao(ctx: commands.Context, *, texto: str = ""):
+    if not texto:
+        await ctx.reply("❌ Você não enviou os dados da prisão.\n\n" + MODELO_USO, mention_author=False)
+        return
+
+    partes = [p.strip() for p in texto.split(";")]
+
+    if len(partes) != 14:
+        await ctx.reply(
+            f"❌ Formato inválido. Esperado **14 campos**, mas vieram **{len(partes)}**.\n\n{MODELO_USO}",
+            mention_author=False,
+        )
+        return
+
+    anexos = [a.url for a in ctx.message.attachments[:3]]
+    embed = criar_embed_prisao(partes, ctx.author, anexos)
+
+    canal_destino = ctx.channel
+    if CANAL_LOG_ID:
+        canal = bot.get_channel(CANAL_LOG_ID)
+        if canal and isinstance(canal, (discord.TextChannel, discord.Thread)):
+            canal_destino = canal
+
+    await canal_destino.send(embed=embed)
+    await ctx.message.add_reaction("✅")
+
+
+if __name__ == "__main__":
+    if TOKEN == "COLE_SEU_TOKEN_AQUI":
+        raise RuntimeError(
+            "Defina DISCORD_TOKEN nas variáveis de ambiente ou preencha TOKEN_LOCAL no main.py."
+        )
+    bot.run(TOKEN)
