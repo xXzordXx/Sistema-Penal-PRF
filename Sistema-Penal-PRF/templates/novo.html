@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Novo registro • Sistema Penal PRF{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>Novo registro</h2>
+    <p>Cadastre um novo relatório penal.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" class="grid" style="gap:18px;">
+    <div class="form-grid">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" name="nome" required>
+      </div>
+      <div class="field">
+        <label>Passaporte</label>
+        <input type="text" name="passaporte" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Crimes</label>
+      <textarea name="crimes" required></textarea>
+    </div>
+
+    <div class="field">
+      <label>Relatório</label>
+      <textarea name="relatorio" required></textarea>
+    </div>
+
+    <div style="display:flex; gap:12px;">
+      <button class="btn" type="submit">Salvar registro</button>
+      <a class="btn secondary" href="{{ url_for('index') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
