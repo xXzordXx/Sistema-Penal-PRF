@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Registro</title>
+</head>
+<body>
+    <h1>Novo Registro</h1>
+
+    <a href="{{ url_for('index') }}">Voltar</a>
+
+    <form method="post">
+        <input type="text" name="nome" placeholder="Nome" required><br><br>
+        <input type="text" name="passaporte" placeholder="Passaporte" required><br><br>
+        <textarea name="crimes" placeholder="Crimes" required></textarea><br><br>
+        <textarea name="relatorio" placeholder="Relatório" required></textarea><br><br>
+        <button type="submit">Salvar</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Registros</title>
+</head>
+<body>
+    <h1>Consulta de Registros</h1>
+
+    <a href="{{ url_for('index') }}">Voltar</a>
+
+    <form method="get">
+        <input type="text" name="q" placeholder="Buscar por nome, passaporte ou crime" value="{{ termo }}">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <hr>
+
+    {% for r in registros %}
+        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+            <h3>{{ r.nome }}</h3>
+            <p><strong>Passaporte:</strong> {{ r.passaporte }}</p>
+            <p><strong>Crimes:</strong> {{ r.crimes }}</p>
+            <a href="{{ url_for('detalhe_registro', registro_id=r.id) }}">Ver detalhe</a>
+        </div>
+    {% endfor %}
+</body>
+</html>
