@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Consulta • Sistema Penal PRF{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>Consulta</h2>
+    <p>Pesquise registros por nome, passaporte ou crime.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" class="search-row">
+    <input type="text" name="q" value="{{ termo }}" placeholder="Buscar...">
+    <button class="btn" type="submit">Pesquisar</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Passaporte</th>
+          <th>Crimes</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in registros %}
+        <tr>
+          <td>#{{ r.id }}</td>
+          <td>{{ r.nome }}</td>
+          <td>{{ r.passaporte }}</td>
+          <td>{{ r.crimes[:80] }}{% if r.crimes|length > 80 %}...{% endif %}</td>
+          <td><a class="btn secondary" href="{{ url_for('detalhe_registro', registro_id=r.id) }}">Abrir</a></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">Nenhum resultado encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
