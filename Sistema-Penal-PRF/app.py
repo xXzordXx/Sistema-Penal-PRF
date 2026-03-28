@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -16,8 +16,8 @@ db = SQLAlchemy(app)
 # =========================
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50))
-    password = db.Column(db.String(50))
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
 
 class Registro(db.Model):
@@ -49,7 +49,18 @@ def login():
             session["user"] = user.username
             return redirect("/")
 
+        flash("Usuário ou senha inválidos.", "error")
+
     return render_template("login.html")
+
+
+# =========================
+# LOGOUT
+# =========================
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/login")
 
 
 # =========================
@@ -82,9 +93,45 @@ def novo():
         db.session.add(r)
         db.session.commit()
 
+        flash("Registro criado com sucesso.", "success")
         return redirect("/")
 
     return render_template("novo.html")
+
+
+# =========================
+# CONSULTA
+# =========================
+@app.route("/consulta")
+def consulta():
+    if "user" not in session:
+        return redirect("/login")
+
+    termo = request.args.get("q", "").strip()
+
+    if termo:
+        registros = Registro.query.filter(
+            (Registro.nome.contains(termo)) |
+            (Registro.passaporte.contains(termo)) |
+            (Registro.crimes.contains(termo))
+        ).all()
+    else:
+        registros = Registro.query.all()
+
+    return render_template("consulta.html", registros=registros, termo=termo)
+
+
+# =========================
+# DETALHE DO REGISTRO
+# =========================
+@app.route("/registro/<int:registro_id>")
+def detalhe_registro(registro_id):
+    if "user" not in session:
+        return redirect("/login")
+
+    registro = Registro.query.get_or_404(registro_id)
+    imagens = Imagem.query.filter_by(registro_id=registro.id).all()
+    return render_template("detalhe_registro.html", registro=registro, imagens=imagens)
 
 
 # =========================
@@ -111,6 +158,14 @@ def api_prisao():
 # =========================
 with app.app_context():
     db.create_all()
+
+    if not Usuario.query.filter_by(username="admin").first():
+        admin = Usuario(
+            username="admin",
+            password="PJ6x£lj(5Y6)"
+        )
+        db.session.add(admin)
+        db.session.commit()
 
 
 if __name__ == "__main__":
