@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Registro #{{ registro.id }} • Sistema Penal PRF{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>Registro #{{ registro.id }}</h2>
+    <p>Detalhes completos do registro.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div><strong>Nome:</strong><br>{{ registro.nome }}</div>
+    <div><strong>Passaporte:</strong><br>{{ registro.passaporte }}</div>
+  </div>
+
+  <div style="margin-top:18px;">
+    <strong>Crimes:</strong>
+    <p class="muted">{{ registro.crimes }}</p>
+  </div>
+
+  <div style="margin-top:18px;">
+    <strong>Relatório:</strong>
+    <p class="muted">{{ registro.relatorio }}</p>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Galeria</h3>
+  <div class="gallery">
+    {% for img in imagens %}
+      <img src="{{ img.url }}" alt="Imagem do registro">
+    {% else %}
+      <p class="muted">Nenhuma imagem cadastrada neste registro.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
