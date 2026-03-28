@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Login • Sistema Penal PRF{% endblock %}
+{% block auth_content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <span class="badge">Acesso restrito</span>
+    <h1>Sistema Penal PRF</h1>
+    <p>Faça login para acessar o painel operacional.</p>
+    <form method="post" style="display:grid; gap:14px;">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" name="user" placeholder="Digite seu usuário" required>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" name="pass" placeholder="Digite sua senha" required>
+      </div>
+      <button class="btn" type="submit">Entrar no sistema</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
