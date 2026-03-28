@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard • Sistema Penal PRF{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>Dashboard</h2>
+    <p>Painel operacional do Sistema Penal PRF.</p>
+  </div>
+  <div class="user-chip">Logado como {{ session.get('user') }}</div>
+</div>
+
+<div class="grid grid-3">
+  <div class="card">
+    <div class="muted">Total de registros</div>
+    <div class="stats-value">{{ registros|length }}</div>
+  </div>
+  <div class="card">
+    <div class="muted">Sistema</div>
+    <div class="stats-value">Online</div>
+  </div>
+  <div class="card">
+    <div class="muted">Operador</div>
+    <div class="stats-value" style="font-size:22px;">{{ session.get('user') }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h3>Registros recentes</h3>
+    <a class="btn" href="{{ url_for('novo') }}">Novo registro</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Passaporte</th>
+          <th>Crimes</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in registros %}
+        <tr>
+          <td>#{{ r.id }}</td>
+          <td>{{ r.nome }}</td>
+          <td>{{ r.passaporte }}</td>
+          <td>{{ r.crimes[:80] }}{% if r.crimes|length > 80 %}...{% endif %}</td>
+          <td><a class="btn secondary" href="{{ url_for('detalhe_registro', registro_id=r.id) }}">Abrir</a></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">Nenhum registro encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
