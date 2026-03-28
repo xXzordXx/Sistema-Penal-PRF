@@ -5,7 +5,9 @@ import os
 app = Flask(__name__)
 app.secret_key = "prf_secret"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
 
 
@@ -35,7 +37,7 @@ class Imagem(db.Model):
 # =========================
 # LOGIN
 # =========================
-@app.route("/login", methods=["GET","POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         user = Usuario.query.filter_by(
@@ -46,6 +48,7 @@ def login():
         if user:
             session["user"] = user.username
             return redirect("/")
+
     return render_template("login.html")
 
 
@@ -64,8 +67,11 @@ def index():
 # =========================
 # NOVO REGISTRO
 # =========================
-@app.route("/novo", methods=["GET","POST"])
+@app.route("/novo", methods=["GET", "POST"])
 def novo():
+    if "user" not in session:
+        return redirect("/login")
+
     if request.method == "POST":
         r = Registro(
             nome=request.form["nome"],
@@ -86,13 +92,13 @@ def novo():
 # =========================
 @app.route("/api/prisao", methods=["POST"])
 def api_prisao():
-    data = request.json
+    data = request.json or {}
 
     r = Registro(
-        nome=data["nome"],
-        passaporte=data["passaporte"],
-        crimes=data["crimes"],
-        relatorio=data["relatorio"]
+        nome=data.get("nome"),
+        passaporte=data.get("passaporte"),
+        crimes=data.get("crimes"),
+        relatorio=data.get("relatorio")
     )
     db.session.add(r)
     db.session.commit()
@@ -100,7 +106,13 @@ def api_prisao():
     return {"status": "ok"}
 
 
+# =========================
+# INICIALIZAÇÃO
+# =========================
+with app.app_context():
+    db.create_all()
+
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
